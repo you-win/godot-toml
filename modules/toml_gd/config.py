@@ -5,7 +5,10 @@ def configure(env):
     pass
 
 def get_doc_classes():
-    return []
+    return [
+        "TOML",
+        "TOMLParseResult"
+    ]
 
 def get_doc_path():
-    return ""
+    return "doc_classes"

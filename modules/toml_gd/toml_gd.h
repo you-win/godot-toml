@@ -5,6 +5,8 @@
 #include "core/ustring.h"
 #include "core/variant.h"
 
+#include "toml.hpp"
+
 class TOMLParseResult : public Reference {
 	GDCLASS(TOMLParseResult, Reference);
 
@@ -37,12 +39,15 @@ public:
 class TOML : public Reference {
 	GDCLASS(TOML, Reference);
 
+private:
+	toml::value _to_toml_string(const Variant &p_value);
+
 protected:
 	static void _bind_methods();
 
 public:
-	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
 	Ref<TOMLParseResult> parse(const String &p_toml);
+	String to_toml_string(const Variant &p_value, int p_width = 80);
 };
 
 #endif // TOML_GD_H

@@ -2,8 +2,6 @@
 
 #include "core/array.h"
 #include "core/dictionary.h"
-#include "core/io/json.h"
-#include "toml.hpp"
 
 // https://github.com/ToruNiina/toml11/blob/master/tests/check_toml_test.cpp
 struct Converter {
@@ -77,21 +75,20 @@ struct Converter {
 		return Variant(d);
 	}
 
-	Variant operator()(const toml::table& v) {
+	Variant operator()(const toml::table &v) {
 		Dictionary d;
 
-		
-		for (const auto& elem : v) {
+		for (const auto &elem : v) {
 			d[String(((std::string)elem.first).c_str())] = toml::visit(*this, elem.second);
 		}
 
 		return Variant(d);
 	}
 
-	Variant operator()(const toml::array& v) {
+	Variant operator()(const toml::array &v) {
 		Array a;
 
-		for (const auto& elem : v) {
+		for (const auto &elem : v) {
 			a.append(toml::visit(*this, elem));
 		}
 
@@ -149,31 +146,26 @@ Variant TOMLParseResult::get_result() const {
 }
 
 void TOML::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("print", "value", "indent", "sort_keys"), &TOML::print, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("parse", "toml"), &TOML::parse);
-}
-
-String TOML::print(const Variant &p_value, const String &p_indent, bool p_sort_keys) {
-	return JSON::print(p_value, p_indent, p_sort_keys);
+	ClassDB::bind_method(D_METHOD("to_toml_string", "value", "width"), &TOML::to_toml_string, DEFVAL(80));
 }
 
 Ref<TOMLParseResult> TOML::parse(const String &p_toml) {
 	Ref<TOMLParseResult> result;
 	result.instance();
 
-	std::wstring ws = p_toml.c_str();
-	std::string s(ws.begin(), ws.end());
+	std::string s(p_toml.utf8().get_data());
 	// Solution for parsing strings
 	// https://github.com/ToruNiina/toml11/issues/88
 	std::istringstream is(s, std::ios_base::binary | std::ios_base::in);
 
 	try {
-		auto table = toml::parse(is, "std::string");
+		toml::value table = toml::parse(is, "std::string");
 		Variant v = toml::visit(Converter(), table);
 
 		result->set_result(v);
 		result->set_error(OK);
-	} catch(const toml::syntax_error& err) {
+	} catch (const toml::syntax_error &err) {
 		ERR_PRINT(vformat("Error parsing TOML: %s", String(err.what())));
 
 		result->set_error(ERR_PARSE_ERROR);
@@ -182,4 +174,58 @@ Ref<TOMLParseResult> TOML::parse(const String &p_toml) {
 	}
 
 	return result;
+}
+
+// https://stackoverflow.com/questions/3203452/how-to-read-entire-stream-into-a-stdstring
+toml::value TOML::_to_toml_string(const Variant &p_value) {
+	switch (p_value.get_type()) {
+		case Variant::DICTIONARY: {
+			const Dictionary dict = Dictionary(p_value);
+
+			const Array keys = dict.keys();
+
+			toml::value data{};
+
+			for (int i = 0; i < keys.size(); i++) {
+				String key = String(keys[i]);
+				std::string toml_key(key.utf8().get_data());
+				data[toml_key] = _to_toml_string(dict[key]);
+			}
+
+			return data;
+		} break;
+		case Variant::ARRAY: {
+			const Array array = Array(p_value);
+
+			toml::array data{};
+
+			for (int i = 0; i < array.size(); i++) {
+				data.push_back(_to_toml_string(array[i]));
+			}
+
+			return data;
+		} break;
+		case Variant::BOOL: {
+			return toml::boolean{ (bool)p_value };
+		} break;
+		case Variant::INT: {
+			return toml::integer{ (int)p_value };
+		} break;
+		case Variant::REAL: {
+			return toml::floating{ (real_t)p_value };
+		} break;
+		case Variant::STRING: {
+			std::string s(((String)p_value).utf8().get_data());
+			return toml::string{ s };
+		} break;
+		default: {
+			std::string s(String(p_value).utf8().get_data());
+			return toml::string{ s };
+		} break;
+	}
+}
+
+// https://github.com/ToruNiina/toml11#serializing-toml-data
+String TOML::to_toml_string(const Variant &p_value, int p_width) {
+	return String(toml::format(_to_toml_string(p_value), p_width).c_str());
 }

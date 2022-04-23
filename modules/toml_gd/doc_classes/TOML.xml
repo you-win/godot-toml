@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TOML" inherits="Reference" version="3.4">
+	<brief_description>
+        TOML parser and printer.
+	</brief_description>
+	<description>
+        A TOML parser and printer. Does not store the intermediate TOML object but instead returns a [TOMLParseResult].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+        <method name="parse">
+            <return type="TOMLParseResult" />
+            <argument index="0" name="toml" type="String" />
+            <description>
+                Parse a TOML string into a TOMLParseResult.
+            </description>
+        </method>
+        <method name="to_toml_string">
+            <return type="String" />
+            <argument index="0" name="value" type="Variant" />
+            <argument index="1" name="width" type="int" default="80" />
+            <description>
+                Take a collection and return that collection as a TOML String.
+            </description>
+        </method>
+	</methods>
+	<members>
+	</members>
+	<constants>
+	</constants>
+</class>
