@@ -184,12 +184,15 @@ toml::value TOML::_to_toml_string(const Variant &p_value) {
 
 			const Array keys = dict.keys();
 
-			toml::value data{};
+			toml::table data{};
 
 			for (int i = 0; i < keys.size(); i++) {
 				String key = String(keys[i]);
 				std::string toml_key(key.utf8().get_data());
-				data[toml_key] = _to_toml_string(dict[key]);
+
+				toml::value toml_value = _to_toml_string(dict[key]);
+
+				data[toml_key] = toml_value;
 			}
 
 			return data;
@@ -200,7 +203,9 @@ toml::value TOML::_to_toml_string(const Variant &p_value) {
 			toml::array data{};
 
 			for (int i = 0; i < array.size(); i++) {
-				data.push_back(_to_toml_string(array[i]));
+				toml::value toml_value = _to_toml_string(array[i]);
+
+				data.push_back(toml_value);
 			}
 
 			return data;
@@ -227,5 +232,8 @@ toml::value TOML::_to_toml_string(const Variant &p_value) {
 
 // https://github.com/ToruNiina/toml11#serializing-toml-data
 String TOML::to_toml_string(const Variant &p_value, int p_width) {
-	return String(toml::format(_to_toml_string(p_value), p_width).c_str());
+	toml::value table = _to_toml_string(p_value);
+	std::string toml_output = toml::format(table, p_width);
+
+	return String(toml_output.c_str());
 }
