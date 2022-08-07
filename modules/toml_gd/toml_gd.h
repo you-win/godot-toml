@@ -5,7 +5,7 @@
 #include "core/ustring.h"
 #include "core/variant.h"
 
-#include "toml.hpp"
+#include "thirdparty/toml11/toml.hpp"
 
 class TOMLParseResult : public Reference {
 	GDCLASS(TOMLParseResult, Reference);
