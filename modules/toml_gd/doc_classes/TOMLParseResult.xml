@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TOMLParseResult" inherits="Reference" version="3.4">
+	<brief_description>
+        The result of parsing a TOML String.
+	</brief_description>
+	<description>
+        The result of using [TOML] to parse a [code]String[/code]. Contains an [code]Error[/code] code and a Godot collection if parsing was successful.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+        <member name="error" type="int" setter="set_error" getter="get_error">
+            The [code]Error[/code] result from parsing.
+        </member>
+        <member name="error_string" type="String" setter="set_error_string" getter="get_error_string">
+            The [code]Error[/code] description from parsing.
+        </member>
+        <member name="error_line" type="int" setter="set_error_line" getter="get_error_line">
+            The line where an [code]Error[/code] occurred.
+        </member>
+        <member name="result" type="Variant" setter="set_result" getter="get_result">
+            The resulting Godot collection if parsing was [code]OK[/code].
+        </member>
+	</members>
+	<constants>
+	</constants>
+</class>
